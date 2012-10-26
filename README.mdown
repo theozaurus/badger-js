@@ -1,0 +1,23 @@
+Nagger
+======
+
+Nagger is designed as a Javascript library to act as a the `subscriber` in a
+Publish / Subscribe system. The motivation for this is to allow updates from a
+server to notify the browser based clients as quickly as possible.
+
+Nagger is written in a modular fashion so that different technologies can be
+used for the channel. For instance:
+
+ - XMPP Pubsub
+ - Socket.io
+ - Pusher
+ - Polled Atom feeds
+ - ...
+
+There is also provision for fallbacks. This allows multiple channels to be used.
+This can be used to help aid development (where a channel may not be available),
+or add resilience (where browser capabilities, or the network link quality are
+insufficient).
+
+Callbacks are then used to allow Nagger to be integrated into the rest of the
+system.
