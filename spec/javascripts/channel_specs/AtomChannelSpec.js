@@ -1,9 +1,9 @@
 /*jshint multistr:true */
 
-describe("Nagger.Channel.Atom", function(){
+describe("Badger.Channel.Atom", function(){
 
   var subject;
-  var klass = com.jivatechnology.Nagger.Channel.Atom;
+  var klass = com.jivatechnology.Badger.Channel.Atom;
 
   afterEach(function(){
     if(subject){

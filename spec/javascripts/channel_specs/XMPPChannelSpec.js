@@ -1,8 +1,8 @@
 /*jshint multistr:true */
 
-describe("Nagger.Channel.XMPP", function(){
+describe("Badger.Channel.XMPP", function(){
 
-  var klass = com.jivatechnology.Nagger.Channel.XMPP;
+  var klass = com.jivatechnology.Badger.Channel.XMPP;
 
   var subject;
 

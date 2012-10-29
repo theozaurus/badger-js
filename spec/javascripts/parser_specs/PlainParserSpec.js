@@ -1,6 +1,6 @@
-describe("Nagger.Parser.Plain", function(){
+describe("Badger.Parser.Plain", function(){
 
-  var klass = com.jivatechnology.Nagger.Parser.Plain;
+  var klass = com.jivatechnology.Badger.Parser.Plain;
 
   describe("#parse",function(){
 

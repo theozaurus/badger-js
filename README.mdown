@@ -1,16 +1,14 @@
-Nagger
+Badger
 ======
 
-Nagger is designed as a Javascript library to act as a the `subscriber` in a
+Badger is designed as a Javascript library to act as a the `subscriber` in a
 Publish / Subscribe system. The motivation for this is to allow updates from a
 server to notify the browser based clients as quickly as possible.
 
-Nagger is written in a modular fashion so that different technologies can be
+Badger is written in a modular fashion so that different technologies can be
 used for the channel. For instance:
 
  - XMPP Pubsub
- - Socket.io
- - Pusher
  - Polled Atom feeds
  - ...
 
@@ -19,5 +17,128 @@ This can be used to help aid development (where a channel may not be available),
 or add resilience (where browser capabilities, or the network link quality are
 insufficient).
 
-Callbacks are then used to allow Nagger to be integrated into the rest of the
+Callbacks are then used to allow Badger to be integrated into the rest of the
 system.
+
+Usage
+=====
+
+In order to avoid any namespace conflicts `Badger` uses the public namespace
+`com.jivatechnology` (reverse DNS scheme). You can import this into your local
+scope with something like:
+
+    var Badger = com.jivatechnology.Badger;
+
+Badger allows you to easily specify nodes that you are interested in. First off
+you will need an instance of a `Badger.Coordinator` (sounds fancy doesn't it):
+
+    var badger = new Badger.Coordinator();
+
+From here we can tell our badger to start listening out for things:
+
+    badger.subscribe('mash potato');
+    badger.subscribe('worms');
+
+Or stop listening for things:
+
+    badger.unsubscribe('carrots');
+
+We can also add callbacks (see [Callback docs](https://github.com/theozaurus/callback-js)
+to specify what to do when these events are raised:
+
+ - `onSubscribeSuccess` passing `node`
+ - `onSubscribeFailure` passing `node`
+ - `onUnsubscribeSuccess` passing `node`
+ - `onUnsubscribeFailure` passing `node`
+ - `onMessage` passing `id`,`verb`,`payload`
+
+For example:
+
+    badger.onMessage.add(function(id,verb,payload){
+      // ...
+      // Worm handling code
+      // ...
+    });
+
+This passes an item `id`, the `verb` (`update` or `remove`) and the `payload`.
+The `payload` is processed by a `Badger.Parser` before being sent to the callback.
+A few are parsers are bundled to give you an idea, but these can easily be
+customised to suit your needs. Parsers are linked to `Badger.Channels`. So far
+there are channels for:
+
+ - Polled Atom feed
+ - XMPP Pubsub
+
+ However, it's not too tricky to write your own.
+
+ We can add multiple channels to our coordinator. Lets see that in action:
+
+    var plain = new Badger.Parser.Plain();
+    var atom_channel = Badger.Channel.Atom({delay: 2000, parser: plain});
+
+    badger.backendAppend(atom_channel);
+
+Or we could add a higher priority XMPP channel:
+
+    var strophe = ... strophe setup ...
+    var data_form = new Badger.Parser.DataForm();
+    var xmpp_channel = Badger.Channel.XMPP({
+      connection: strophe,
+      parser:     data_form,
+      pubsub:     'pubsub.foo.bar'
+    });
+
+    badger.backendPrepend(xmpp_channel);
+
+Adding a new channel will cause any failed subscriptions to be retried. Also
+changing the priority of channels will cause subscriptions to be renegotiated
+so that the best one is used that works.
+
+Tests
+=====
+
+All of the tests are written in [Jasmine](http://pivotal.github.com/jasmine/).
+[Sprockets](https://github.com/sstephenson/sprockets) is used to describe
+dependencies between the files. To run the tests, you will first need to
+install [Ruby](http://ruby-lang.org) and [Bundler](http://gembundler.com/).
+Once you have this:
+
+    $ bundle install
+    $ bundle exec rake jasmine
+
+Open your browser to [http://localhost:8888](http://localhost:8888)
+
+If you want to run the tests directly in the console just type:
+
+    $ bundle exec rake jasmine:ci
+    /Users/theo/.rvm/rubies/ruby-1.9.3-p0/bin/ruby -S rspec spec/javascripts/support/jasmine_runner.rb --colour --format progress
+    [2012-03-15 15:46:50] INFO  WEBrick 1.3.1
+    [2012-03-15 15:46:50] INFO  ruby 1.9.3 (2011-10-30) [x86_64-darwin11.1.0]
+    [2012-03-15 15:46:50] INFO  WEBrick::HTTPServer#start: pid=39919 port=63714
+    Waiting for jasmine server on 63714...
+    jasmine server started.
+    Waiting for suite to finish in browser ...
+    ..........................................
+
+Building
+========
+
+Provided you have all of the software installed to run the tests (see above).
+You can build the code using:
+
+    $ bundle exec rake build
+
+This will create a copy of the code in the `build` folder. It will also package
+up any external dependencies (such as [callback-js](http://github.com/theozaurus/callback-js)).
+If you are already using `Sprockets` then it is best to copy the `src` folder
+to your project and let that deal with the build dependencies (avoids
+duplication).
+
+TODO
+====
+
+Add support for:
+
+ - onMessage callback on a per subscription basis
+ - socket.io
+ - pusher

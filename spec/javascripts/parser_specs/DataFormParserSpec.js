@@ -1,8 +1,8 @@
 /*jshint multistr:true */
 
-describe("Nagger.Parser.DataForm", function(){
+describe("Badger.Parser.DataForm", function(){
 
-  var klass = com.jivatechnology.Nagger.Parser.DataForm;
+  var klass = com.jivatechnology.Badger.Parser.DataForm;
 
   describe("#parse",function(){
 

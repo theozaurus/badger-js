@@ -1,4 +1,4 @@
-if (!com.jivatechnology.Nagger.Parser) { com.jivatechnology.Nagger.Parser = {}; }
+if (!com.jivatechnology.Badger.Parser) { com.jivatechnology.Badger.Parser = {}; }
 
 (function(){
 
@@ -18,4 +18,4 @@ if (!com.jivatechnology.Nagger.Parser) { com.jivatechnology.Nagger.Parser = {}; 
 
   })();
 
-}).call(com.jivatechnology.Nagger.Parser);
+}).call(com.jivatechnology.Badger.Parser);

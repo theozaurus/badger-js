@@ -1,7 +1,7 @@
 //= require callback
 //= require strophe
 
-if (!com.jivatechnology.Nagger.Channel) { com.jivatechnology.Nagger.Channel = {}; }
+if (!com.jivatechnology.Badger.Channel) { com.jivatechnology.Badger.Channel = {}; }
 
 (function(){
 
@@ -93,7 +93,7 @@ if (!com.jivatechnology.Nagger.Channel) { com.jivatechnology.Nagger.Channel = {}
       var pubsub_stanza = function(command,node){
         var c       = that.connection();
         var service = that.pubsub();
-        var id      = c.getUniqueId('nagger');
+        var id      = c.getUniqueId('badger');
         var jid     = c.jid;
 
         return $iq({to: service, type: 'set', id: id})
@@ -175,4 +175,4 @@ if (!com.jivatechnology.Nagger.Channel) { com.jivatechnology.Nagger.Channel = {}
 
   })();
 
-}).call(com.jivatechnology.Nagger.Channel);
+}).call(com.jivatechnology.Badger.Channel);

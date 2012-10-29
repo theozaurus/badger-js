@@ -1,7 +1,7 @@
 //= require callback
 //= require jquery
 
-if (!com.jivatechnology.Nagger.Channel) { com.jivatechnology.Nagger.Channel = {}; }
+if (!com.jivatechnology.Badger.Channel) { com.jivatechnology.Badger.Channel = {}; }
 
 (function(){
 
@@ -163,4 +163,4 @@ if (!com.jivatechnology.Nagger.Channel) { com.jivatechnology.Nagger.Channel = {}
 
   })();
 
-}).call( com.jivatechnology.Nagger.Channel );
+}).call( com.jivatechnology.Badger.Channel );

@@ -3,7 +3,7 @@
 // This is a very naive parser, it will not translate all aspects of information
 // in a DataForm. See `DataFormParserSpec.js` to see how it works.
 
-if (!com.jivatechnology.Nagger.Parser) { com.jivatechnology.Nagger.Parser = {}; }
+if (!com.jivatechnology.Badger.Parser) { com.jivatechnology.Badger.Parser = {}; }
 
 (function(){
 
@@ -92,4 +92,4 @@ if (!com.jivatechnology.Nagger.Parser) { com.jivatechnology.Nagger.Parser = {}; 
 
   })();
 
-}).call(com.jivatechnology.Nagger.Parser);
+}).call(com.jivatechnology.Badger.Parser);
