@@ -69,9 +69,9 @@ there are channels for:
  - Polled Atom feed
  - XMPP Pubsub
 
- However, it's not too tricky to write your own.
+However, it's not too tricky to write your own.
 
- We can add multiple channels to our coordinator. Lets see that in action:
+We can add multiple channels to our coordinator. Lets see that in action:
 
     var plain = new Badger.Parser.Plain();
     var atom_channel = Badger.Channel.Atom({delay: 2000, parser: plain});
