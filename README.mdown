@@ -1,4 +1,4 @@
-Badger
+Badger [![Build status](https://secure.travis-ci.org/theozaurus/badger-js.png)](http://travis-ci.org/theozaurus/badger-js)
 ======
 
 Badger is designed as a Javascript library to act as a the `subscriber` in a
@@ -119,6 +119,8 @@ If you want to run the tests directly in the console just type:
     jasmine server started.
     Waiting for suite to finish in browser ...
     ..........................................
+
+Or you can check the current status of master using [Travis](http://travis-ci.org/#!/theozaurus/badger-js)
 
 Building
 ========
