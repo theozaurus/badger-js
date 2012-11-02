@@ -56,7 +56,6 @@
         b.onUnsubscribeFailure.add(function(n){
           // Tell the world
           var sub = subscriptions[n];
-          console.warn(sub.stateAchieved());
           if(sub.stateRequired() != 'subscribed' && sub.stateAchieved() == 'subscribed'){
             that.onUnsubscribeFailure.handle(n);
           }
@@ -117,7 +116,6 @@
         if( untried.length > 0 ){
           // Try highest priority
           b = backendSort(untried).shift();
-          console.warn(b);
           b.subscribe(node);
         } else {
           // Out of luck
