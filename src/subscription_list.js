@@ -48,6 +48,19 @@
         return priorities.indexOf(s);
       };
 
+      var backendOnMessageCallback = function(node,id,verb,payload){
+        if(node == that.node()){ that.onMessage.handle(id,verb,payload); }
+      };
+
+      var callbacksAddedTo = [];
+      var setupCallbacksFor = function(b){
+        var id = idFor(b);
+        if(callbacksAddedTo.indexOf(b) < 0){
+          b.onMessage.add(backendOnMessageCallback);
+          callbacksAddedTo.push(id);
+        }
+      };
+
       var backendsFilter = function(fun){
         var results = [];
         var backends = that.backends();
@@ -64,6 +77,7 @@
 
       this.updateSubscription = function(b,state){
         subscriptions[idFor(b)] = state;
+        setupCallbacksFor(b);
       };
 
       this.stateRequired = create_getter_setter(options,"stateRequired");
@@ -101,6 +115,9 @@
           }
         });
       };
+
+      var CallbackList = com.jivatechnology.CallbackList;
+      this.onMessage = new CallbackList({must_keep:true});
 
     };
 

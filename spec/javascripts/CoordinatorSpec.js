@@ -214,6 +214,12 @@ describe("Badger.Coordinator",function(){
       expect(done).toEqual(true);
     });
 
+    it("should return the subscriptionList", function(){
+      var returned = subject.subscribe("foo");
+
+      expect(returned).toBeInstanceOf(com.jivatechnology.Badger.SubscriptionList);
+    });
+
   });
 
   describe("#unsubscribe", function(){

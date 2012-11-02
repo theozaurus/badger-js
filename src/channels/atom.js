@@ -73,7 +73,7 @@ if (!com.jivatechnology.Badger.Channel) { com.jivatechnology.Badger.Channel = {}
             if(oldDataCache[id] != newDataCache[id]){
               var payload = that.parser().parse(payloads[id]);
 
-              that.onMessage.handle(id,"update",payload);
+              that.onMessage.handle(node, id, "update", payload);
             }
           }
         }
@@ -82,7 +82,7 @@ if (!com.jivatechnology.Badger.Channel) { com.jivatechnology.Badger.Channel = {}
         for(id in oldDataCache){
           if(oldDataCache.hasOwnProperty(id)){
             if(!newDataCache.hasOwnProperty(id)){
-              that.onMessage.handle(id,"remove");
+              that.onMessage.handle(node, id, "remove");
             }
           }
         }

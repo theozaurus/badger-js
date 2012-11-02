@@ -141,10 +141,8 @@ describe("Badger.Channel.XMPP", function(){
         subject.subscribe("a node");
 
         // Setup onMessage callback
-        var sent_id;
-        var sent_verb;
-        var sent_body;
-        subject.onMessage.add(function(id,verb,m){sent_id = id; sent_verb = verb; sent_body = m;});
+        var sent_node, sent_id, sent_verb, sent_body;
+        subject.onMessage.add(function(node,id,verb,m){sent_node = node; sent_id = id; sent_verb = verb; sent_body = m;});
 
         // Pass stuff to channel
         var stanza = " \
@@ -159,6 +157,7 @@ describe("Badger.Channel.XMPP", function(){
         message_handler(stanza);
 
         // Check results
+        expect(sent_node).toEqual('a node');
         expect(sent_id).toEqual('1');
         expect(sent_verb).toEqual('update');
         expect(sent_body).toEqual('<PAYLOAD>FOO</PAYLOAD>');
@@ -169,9 +168,8 @@ describe("Badger.Channel.XMPP", function(){
         subject.subscribe("a node");
 
         // Setup onMessage callback
-        var sent_id;
-        var sent_verb;
-        subject.onMessage.add(function(id,verb){sent_id = id; sent_verb = verb;});
+        var sent_node, sent_id, sent_verb;
+        subject.onMessage.add(function(node,id,verb){sent_node = node; sent_id = id; sent_verb = verb;});
 
         // Pass stuff to channel
         var stanza = " \
@@ -186,6 +184,7 @@ describe("Badger.Channel.XMPP", function(){
         message_handler(stanza);
 
         // Check results
+        expect(sent_node).toEqual('a node');
         expect(sent_id).toEqual('1');
         expect(sent_verb).toEqual('remove');
       });

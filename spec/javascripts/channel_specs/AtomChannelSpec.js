@@ -80,6 +80,7 @@ describe("Badger.Channel.Atom", function(){
       });
 
       it("should trigger onMessage callbacks with the parsed item", function(){
+        var sent_node;
         var sent_id;
         var sent_verb;
         var sent_body;
@@ -89,7 +90,8 @@ describe("Badger.Channel.Atom", function(){
 
           subject.subscribe("some_node");
 
-          subject.onMessage.add(function(id,verb,payload){
+          subject.onMessage.add(function(node,id,verb,payload){
+            sent_node    = node;
             sent_id      = id;
             sent_verb    = verb;
             sent_payload = payload;
@@ -101,6 +103,7 @@ describe("Badger.Channel.Atom", function(){
         });
 
         runs(function(){
+          expect( sent_node    ).toEqual('some_node');
           expect( sent_id      ).toEqual('1');
           expect( sent_verb    ).toEqual('update');
           expect( sent_payload ).toEqual('output');
@@ -114,6 +117,7 @@ describe("Badger.Channel.Atom", function(){
       it("should trigger onMessage callbacks", function(){
 
         var node_added;
+        var sent_node;
         var sent_id;
         var sent_verb;
 
@@ -130,7 +134,8 @@ describe("Badger.Channel.Atom", function(){
 
         runs(function(){
           subject.onMessage.clear();
-          subject.onMessage.add(function(id,verb){
+          subject.onMessage.add(function(node,id,verb){
+            sent_node = node;
             sent_id   = id;
             sent_verb = verb;
           });
@@ -153,6 +158,7 @@ describe("Badger.Channel.Atom", function(){
         });
 
         runs(function(){
+          expect( sent_node ).toEqual("some_node");
           expect( sent_id ).toEqual("1");
           expect( sent_verb ).toEqual("remove");
         });

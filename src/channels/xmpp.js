@@ -51,14 +51,14 @@ if (!com.jivatechnology.Badger.Channel) { com.jivatechnology.Badger.Channel = {}
               var id = $item.attr('id');
               var payload = $item.html();
               var parsed = that.parser().parse(payload);
-              that.onMessage.handle(id,'update',parsed);
+              that.onMessage.handle(node, id,'update',parsed);
             });
 
             $items.find("> retract").each(function(i,item){
               var $item = $(item);
 
               var id = $item.attr('id');
-              that.onMessage.handle(id,'remove');
+              that.onMessage.handle(node, id,'remove');
             });
           }
 

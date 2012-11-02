@@ -63,8 +63,8 @@
           updateSubscription(n,b,'unsubscribed');
         });
 
-        b.onMessage.add(function(id,verb,payload){
-          that.onMessage.handle(id,verb,payload);
+        b.onMessage.add(function(node,id,verb,payload){
+          that.onMessage.handle(node,id,verb,payload);
         });
       };
 
@@ -86,13 +86,16 @@
       var subscriptions = {};
 
       var addSubscription = function(n){
-        if(!subscriptions[n]){
-          subscriptions[n] = new scope.SubscriptionList({node: n, backends: backends, stateRequired: 'subscribed'});
+        var subscriptionList = subscriptions[n];
+        if(!subscriptionList){
+          subscriptionList = new scope.SubscriptionList({node: n, backends: backends, stateRequired: 'subscribed'});
+          subscriptions[n] = subscriptionList;
           subscribeBackendFor(n);
         } else {
-          subscriptions[n].stateRequired('subscribed');
+          subscriptionList.stateRequired('subscribed');
           subscribeBackendFor(n);
         }
+        return subscriptionList;
       };
 
       var removeSubscription = function(n){
@@ -163,7 +166,7 @@
       };
 
       this.subscribe = function(n){
-        addSubscription(n);
+        return addSubscription(n);
       };
 
       this.unsubscribe = function(n){

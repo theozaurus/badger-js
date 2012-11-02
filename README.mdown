@@ -50,14 +50,22 @@ to specify what to do when these events are raised:
  - `onSubscribeFailure` passing `node`
  - `onUnsubscribeSuccess` passing `node`
  - `onUnsubscribeFailure` passing `node`
- - `onMessage` passing `id`,`verb`,`payload`
+ - `onMessage` passing `node`,`id`,`verb`,`payload`
 
 For example:
 
-    badger.onMessage.add(function(id,verb,payload){
-      // ...
-      // Worm handling code
-      // ...
+    badger.onMessage.add(function(node,id,verb,payload){
+      ...
+      Message handling code
+      ...
+    });
+
+Or we can add a handler that is specific to a certain node:
+
+    badger.subscribe('mash potato').onMessage.add(function(id,verb,payload){
+      ...
+      Mashing code
+      ...
     });
 
 This passes an item `id`, the `verb` (`update` or `remove`) and the `payload`.
@@ -141,6 +149,5 @@ TODO
 
 Add support for:
 
- - onMessage callback on a per subscription basis
  - socket.io
  - pusher
