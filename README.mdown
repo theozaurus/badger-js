@@ -43,7 +43,7 @@ Or stop listening for things:
 
     badger.unsubscribe('carrots');
 
-We can also add callbacks (see [Callback docs](https://github.com/theozaurus/callback-js)
+We can also add callbacks (see [Callback docs](https://github.com/theozaurus/callback-js))
 to specify what to do when these events are raised:
 
  - `onSubscribeSuccess` passing `node`
