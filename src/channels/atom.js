@@ -35,7 +35,8 @@ if (!com.jivatechnology.Badger.Channel) { com.jivatechnology.Badger.Channel = {}
         };
 
         var url = that.urlFor(node);
-        var jqxhr = $.ajax( url ).done( success ).fail( failure );
+        var settings = {headers: {Accept: "application/atom+xml"}, dataType: "text"};
+        var jqxhr = $.ajax( url, settings ).done( success ).fail( failure );
       };
 
       var clearPoll = function(node){
