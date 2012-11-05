@@ -7,6 +7,27 @@ if (!com.jivatechnology.Badger.Channel) { com.jivatechnology.Badger.Channel = {}
 
   this.Atom = (function(){
 
+    var serializeXML = function(xmlData){
+      try {
+        // Gecko- and Webkit-based browsers (Firefox, Chrome), Opera.
+        return (new XMLSerializer()).serializeToString(xmlData);
+      } catch (e) {
+        return xmlData.xml;
+      }
+      return false;
+    };
+
+    var innerXML = function(xmlData){
+      var nodes = xmlData.childNodes;
+      var string = "";
+      for(var i in nodes){
+        if(nodes.hasOwnProperty(i)){
+          string += serializeXML(nodes[i]);
+        }
+      }
+      return string;
+    };
+
     return function(opts){
 
       var that = this;
@@ -54,17 +75,17 @@ if (!com.jivatechnology.Badger.Channel) { com.jivatechnology.Badger.Channel = {}
         var newDataCache = {};
         var payloads = {};
 
-        var entries = $(body).find("entry");
+        var entries = $($.parseXML(body)).find("entry");
         entries.each(function(i,e){
           var $e = $(e);
-          var id = $e.find("id").html();
-          var updated = $e.find("updated").html();
+          var id = innerXML($e.find("id")[0]);
+          var updated = innerXML($e.find("updated")[0]);
 
           // Store the updated value to help us compare for changes
           newDataCache[id] = updated;
 
           // Store the body so we can process it if there are changes
-          payloads[id] = $e.html();
+          payloads[id] = serializeXML(e);
         });
 
         var id;

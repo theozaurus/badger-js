@@ -36,23 +36,21 @@ describe("Badger.Channel.Atom", function(){
       parser  = {parse: function(s){return s;}};
       subject = new klass({parser: parser});
 
-      entry = '\
-        <id>1</id>\
-        <title>Item 1</title>\
-        <author><name>John Does</name></author>\
-        <updated>2012-09-30T11:10:00Z</updated>\
-        <summary>Some data</summary>';
+      entry = '<entry xmlns="http://www.w3.org/2005/Atom"> \
+          <id>1</id>\
+          <title>Item 1</title>\
+          <author><name>John Does</name></author>\
+          <updated>2012-09-30T11:10:00Z</updated>\
+          <summary>Some data</summary> \
+        </entry>';
 
       feed = '\
-        <?xml version="1.0" encoding="utf-8"?>\
         <feed xmlns="http://www.w3.org/2005/Atom">\
           <title>Some Node</title>\
           <link href="http://test.host"/>\
           <updated>2012-09-30T11:19:01Z</updated>\
           <author><name>John Doe</name></author>\
-          <id>test.host,some_node</id>\
-          <entry>' + entry + '</entry>\
-        </feed>';
+          <id>test.host,some_node</id>' + entry + '</feed>';
 
       Mooch.stub_request('GET', 'some_node').returns({ body: feed });
     });
@@ -141,7 +139,6 @@ describe("Badger.Channel.Atom", function(){
           });
 
           feed = '\
-            <?xml version="1.0" encoding="utf-8"?>\
             <feed xmlns="http://www.w3.org/2005/Atom">\
               <title>Some Node</title>\
               <link href="http://test.host"/>\
@@ -177,7 +174,6 @@ describe("Badger.Channel.Atom", function(){
       subject = new klass({parser: parser});
 
       feed = '\
-        <?xml version="1.0" encoding="utf-8"?>\
         <feed xmlns="http://www.w3.org/2005/Atom">\
           <title>Some Node</title>\
           <link href="http://test.host"/>\
@@ -298,7 +294,6 @@ describe("Badger.Channel.Atom", function(){
 
       runs(function(){
         var feed = '\
-          <?xml version="1.0" encoding="utf-8"?>\
           <feed xmlns="http://www.w3.org/2005/Atom">\
             <title>Some Node</title>\
             <link href="http://test.host"/>\
