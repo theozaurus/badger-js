@@ -90,7 +90,7 @@ Or we could add a higher priority XMPP channel:
 
     var strophe = ... strophe setup ...
     var data_form = new Badger.Parser.DataForm();
-    var xmpp_channel = Badger.Channel.XMPP({
+    var xmpp_channel = new Badger.Channel.XMPP({
       connection: strophe,
       parser:     data_form,
       pubsub:     'pubsub.foo.bar'
