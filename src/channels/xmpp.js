@@ -39,10 +39,9 @@ if (!com.jivatechnology.Badger.Channel) { com.jivatechnology.Badger.Channel = {}
 
       // Handle messages
 
-      var onMessage = function(m){
+      var onMessage = function(xml){
         // pick out nodes
-        var doc = XML.stringToXML(m);
-        $(doc).find("event[xmlns='http://jabber.org/protocol/pubsub#event'] > items").each(function(i,items){
+        $(xml).find("event[xmlns='http://jabber.org/protocol/pubsub#event'] > items").each(function(i,items){
           var $items = $(items);
           var node = $items.attr('node');
 
