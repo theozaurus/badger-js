@@ -53,7 +53,7 @@ if (!com.jivatechnology.Badger.Channel) { com.jivatechnology.Badger.Channel = {}
               var $item = $(item);
 
               var id = $item.attr('id');
-              var payload = XML.XMLContentsToString(item);
+              var payload = XML.XMLToString(item);
               var parsed = that.parser().parse(payload);
               that.onMessage.handle(node, id,'update',parsed);
             });
