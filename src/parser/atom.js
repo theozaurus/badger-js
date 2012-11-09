@@ -1,35 +1,17 @@
 //= require jquery
+//= require ../utils/xml
 
 if (!com.jivatechnology.Badger.Parser) { com.jivatechnology.Badger.Parser = {}; }
 
 (function(){
+
+  var XML = com.jivatechnology.Badger.Utils.XML;
 
   this.Atom = (function(){
 
     var stringToDate = function(string){
       // Not compatible in all browsers
       return new Date(Date.parse(string));
-    };
-
-    var serializeXML = function(xmlData){
-      try {
-        // Gecko- and Webkit-based browsers (Firefox, Chrome), Opera.
-        return (new XMLSerializer()).serializeToString(xmlData);
-      } catch (e) {
-        return xmlData.xml;
-      }
-      return false;
-    };
-
-    var innerXML = function(xmlData){
-      var nodes = xmlData.childNodes;
-      var string = "";
-      for(var i in nodes){
-        if(nodes.hasOwnProperty(i)){
-          string += serializeXML(nodes[i]);
-        }
-      }
-      return string;
     };
 
     var personRule = {
@@ -87,7 +69,7 @@ if (!com.jivatechnology.Badger.Parser) { com.jivatechnology.Badger.Parser = {}; 
       var ruleSet = rules[type] || {};
 
       if(!(ruleSet.attributes || ruleSet.required || ruleSet.optional || ruleSet.many)){
-        var payload = innerXML($input[0]);
+        var payload = XML.XMLContentsToString($input[0]);
         if(ruleSet.parser){
           payload = ruleSet.parser(payload);
         }
@@ -130,7 +112,7 @@ if (!com.jivatechnology.Badger.Parser) { com.jivatechnology.Badger.Parser = {}; 
     return function(){
 
       this.parse = function(input){
-        $e = $($.parseXML(input));
+        $e = $(XML.stringToXML(input));
 
         if( $e.length === 0 ){
           return {};

@@ -1,9 +1,12 @@
 //= require callback
 //= require strophe
+//= require ../utils/xml
 
 if (!com.jivatechnology.Badger.Channel) { com.jivatechnology.Badger.Channel = {}; }
 
 (function(){
+
+  var XML = com.jivatechnology.Badger.Utils.XML;
 
   this.XMPP = (function(){
 
@@ -38,7 +41,8 @@ if (!com.jivatechnology.Badger.Channel) { com.jivatechnology.Badger.Channel = {}
 
       var onMessage = function(m){
         // pick out nodes
-        $(m).find("event[xmlns='http://jabber.org/protocol/pubsub#event'] > items").each(function(i,items){
+        var doc = XML.stringToXML(m);
+        $(doc).find("event[xmlns='http://jabber.org/protocol/pubsub#event'] > items").each(function(i,items){
           var $items = $(items);
           var node = $items.attr('node');
 
@@ -49,7 +53,7 @@ if (!com.jivatechnology.Badger.Channel) { com.jivatechnology.Badger.Channel = {}
               var $item = $(item);
 
               var id = $item.attr('id');
-              var payload = $item.html();
+              var payload = XML.XMLContentsToString(item);
               var parsed = that.parser().parse(payload);
               that.onMessage.handle(node, id,'update',parsed);
             });

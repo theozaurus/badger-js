@@ -1,4 +1,5 @@
 //= require jquery
+//= require ../utils/xml
 
 // This is a very naive parser, it will not translate all aspects of information
 // in a DataForm. See `DataFormParserSpec.js` to see how it works.
@@ -7,14 +8,16 @@ if (!com.jivatechnology.Badger.Parser) { com.jivatechnology.Badger.Parser = {}; 
 
 (function(){
 
+  var XML = com.jivatechnology.Badger.Utils.XML;
+
   this.DataForm = (function(){
 
     var VALID_TYPES = ['boolean','hidden','jid-multi','jid-single','list-multi','list-single','text-multi','text-private','text-single'];
 
     var string_or_null = function(tree,element){
-      var r = tree.find(element);
-      if(r.length > 0){
-        return r.html();
+      var $r = tree.find(element);
+      if($r.length > 0){
+        return XML.XMLContentsToString($r[0]);
       } else {
         return null;
       }
@@ -43,12 +46,13 @@ if (!com.jivatechnology.Badger.Parser) { com.jivatechnology.Badger.Parser = {}; 
 
       if(is_multi){
         return $field_tree.find("> value").map(function(i,v){
-          var $v = $(v);
-          return coerce_value(type,$v.html());
+          var string = XML.XMLContentsToString(v);
+          return coerce_value(type,string);
         }).toArray();
       } else {
         v = $field_tree.find("> value")[0];
-        return coerce_value(type,$(v).html()) || default_value(type);
+        var string = XML.XMLContentsToString(v);
+        return coerce_value(type,string) || default_value(type);
       }
 
     };
@@ -62,9 +66,9 @@ if (!com.jivatechnology.Badger.Parser) { com.jivatechnology.Badger.Parser = {}; 
       return VALID_TYPES.indexOf(type) >= 0;
     };
 
-    var fields = function(tree){
+    var fields = function($tree){
       var result = {};
-      tree.find("> field").each(function(i,f){
+      $tree.find("x > field").each(function(i,f){
         var $f = $(f);
         if(interesting_field($f)){
           result[field_name($f)] = field_value($f);
@@ -76,7 +80,7 @@ if (!com.jivatechnology.Badger.Parser) { com.jivatechnology.Badger.Parser = {}; 
     return function(){
 
       this.parse = function(input){
-        var $input = $(input);
+        var $input = $(XML.stringToXML(input));
 
         var data_form = {};
 

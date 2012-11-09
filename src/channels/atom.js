@@ -1,32 +1,14 @@
 //= require callback
 //= require jquery
+//= require ../utils/xml
 
 if (!com.jivatechnology.Badger.Channel) { com.jivatechnology.Badger.Channel = {}; }
 
 (function(){
 
+  var XML = com.jivatechnology.Badger.Utils.XML;
+
   this.Atom = (function(){
-
-    var serializeXML = function(xmlData){
-      try {
-        // Gecko- and Webkit-based browsers (Firefox, Chrome), Opera.
-        return (new XMLSerializer()).serializeToString(xmlData);
-      } catch (e) {
-        return xmlData.xml;
-      }
-      return false;
-    };
-
-    var innerXML = function(xmlData){
-      var nodes = xmlData.childNodes;
-      var string = "";
-      for(var i in nodes){
-        if(nodes.hasOwnProperty(i)){
-          string += serializeXML(nodes[i]);
-        }
-      }
-      return string;
-    };
 
     return function(opts){
 
@@ -75,17 +57,17 @@ if (!com.jivatechnology.Badger.Channel) { com.jivatechnology.Badger.Channel = {}
         var newDataCache = {};
         var payloads = {};
 
-        var entries = $($.parseXML(body)).find("entry");
+        var entries = $(XML.stringToXML(body)).find("entry");
         entries.each(function(i,e){
           var $e = $(e);
-          var id = innerXML($e.find("id")[0]);
-          var updated = innerXML($e.find("updated")[0]);
+          var id = XML.XMLContentsToString($e.find("id")[0]);
+          var updated = XML.XMLContentsToString($e.find("updated")[0]);
 
           // Store the updated value to help us compare for changes
           newDataCache[id] = updated;
 
           // Store the body so we can process it if there are changes
-          payloads[id] = serializeXML(e);
+          payloads[id] = XML.XMLToString(e);
         });
 
         var id;

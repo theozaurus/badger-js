@@ -11,9 +11,10 @@
 #   - dist/**/*.js
 #
 src_files:
-  - 'src/badger.js'
-  - 'src/**/*.js'
   - 'vendor/**/*.js'
+  - 'src/badger.js'
+  - 'src/utils/**.js'
+  - 'src/**/*.js'
 
 # stylesheets
 #

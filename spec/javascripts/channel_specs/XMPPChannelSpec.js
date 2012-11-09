@@ -130,7 +130,7 @@ describe("Badger.Channel.XMPP", function(){
 
         // Check results
         expect(run_again).toBeTruthy();
-        expect(message).toEqual('<payload>foo</payload>');
+        expect(message).toEqual('<payload xmlns="http://jabber.org/protocol/pubsub#event">foo</payload>');
       });
 
       it("should trigger onMessage callbacks with the parsed item", function(){
@@ -160,7 +160,7 @@ describe("Badger.Channel.XMPP", function(){
         expect(sent_node).toEqual('a node');
         expect(sent_id).toEqual('1');
         expect(sent_verb).toEqual('update');
-        expect(sent_body).toEqual('<PAYLOAD>FOO</PAYLOAD>');
+        expect(sent_body).toEqual('<PAYLOAD XMLNS="HTTP://JABBER.ORG/PROTOCOL/PUBSUB#EVENT">FOO</PAYLOAD>');
       });
 
       it("should trigger onMessage callback for remove an item", function(){
