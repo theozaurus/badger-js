@@ -8,20 +8,33 @@ describe("Badger.Channel.XMPP", function(){
 
   var subject;
 
+  var stropheBadgerPlugin;
+
   var connection_builder = function(){
-    return {
+    // Create an instance of our badger plugin from the badger prototype
+    var F = function () {};
+    F.prototype = Strophe._connectionPlugins.badger;
+    stropheBadgerPlugin = new F();
+
+    var conn = {
       jid:           "foo@test.host/123",
       getUniqueId:   function(){ return "1"; },
       sendIQ:        function(s,success,failure){ success(); },
       addHandler:    function(){},
-      deleteHandler: function(){}
+      deleteHandler: function(){},
+      badger:        stropheBadgerPlugin // Add this instance to our connection
     };
+
+    // Simulate the connection going online
+    stropheBadgerPlugin.statusChanged(Strophe.Status.ATTACHED);
+
+    return conn;
   };
 
   describe("initialisation", function(){
 
     it("should accept a configuration object", function(){
-      var xmpp    = {};
+      var xmpp    = connection_builder();
       var pubsub  = "pubsub.test.host";
       var parser  = {};
 
@@ -35,17 +48,49 @@ describe("Badger.Channel.XMPP", function(){
 
   describe("XMPP connection event", function(){
 
+    beforeEach(function(){
+      xmpp    = connection_builder();
+      parser  = {parse: function(s){return s;}};
+      subject = new klass({'connection': xmpp, 'pubsub': 'pubsub.test.host', 'parser': parser});
+    });
+
     describe("'disconnected'", function(){
 
       // Not sure how this will operate yet
-      it("should trigger onFailure callbacks");
+      it("should trigger onFailure callbacks", function(){
+        var failed = false;
+
+        subject.subscribe("node1");
+        subject.onSubscribeFailure.add(function(n){ failed = n;});
+
+        expect(failed).toBeFalsy();
+
+        stropheBadgerPlugin.statusChanged(Strophe.Status.DISCONNECTED);
+
+        expect(failed).toEqual("node1");
+      });
 
     });
 
     describe("'connected'", function(){
 
       // Not sure how this will operate yet
-      it("should resubscribe to all subscriptions");
+      it("should resubscribe to all subscriptions", function(){
+        subject.subscribe("node1");
+
+        stropheBadgerPlugin.statusChanged(Strophe.Status.DISCONNECTED);
+
+        var success = false;
+        subject.onSubscribeSuccess.add(function(n){
+          success = n;
+        });
+
+        expect(success).toBeFalsy();
+
+        stropheBadgerPlugin.statusChanged(Strophe.Status.ATTACHED);
+
+        expect(success).toEqual("node1");
+      });
 
     });
 
