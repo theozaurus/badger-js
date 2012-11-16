@@ -56,7 +56,6 @@ describe("Badger.Channel.XMPP", function(){
 
     describe("'disconnected'", function(){
 
-      // Not sure how this will operate yet
       it("should trigger onFailure callbacks", function(){
         var failed = false;
 
@@ -74,7 +73,6 @@ describe("Badger.Channel.XMPP", function(){
 
     describe("'connected'", function(){
 
-      // Not sure how this will operate yet
       it("should resubscribe to all subscriptions", function(){
         subject.subscribe("node1");
 
@@ -85,6 +83,29 @@ describe("Badger.Channel.XMPP", function(){
           success = n;
         });
 
+        expect(success).toBeFalsy();
+
+        stropheBadgerPlugin.statusChanged(Strophe.Status.ATTACHED);
+
+        expect(success).toEqual("node1");
+      });
+
+      it("should resubscribe to all connections, even if it started in disconnected", function(){
+        stropheBadgerPlugin.statusChanged(Strophe.Status.DISCONNECTED);
+
+        var success = false;
+        subject.onSubscribeSuccess.add(function(n){
+          success = n;
+        });
+
+        var failure = false;
+        subject.onSubscribeFailure.add(function(n){
+          failure = n;
+        });
+
+        subject.subscribe("node1");
+
+        expect(failure).toEqual("node1");
         expect(success).toBeFalsy();
 
         stropheBadgerPlugin.statusChanged(Strophe.Status.ATTACHED);
