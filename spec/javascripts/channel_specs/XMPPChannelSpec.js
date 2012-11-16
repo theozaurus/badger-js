@@ -194,7 +194,7 @@ describe("Badger.Channel.XMPP", function(){
             </event> \
           </message>";
 
-        var run_again = message_handler(XML.stringToXML(stanza));
+        var run_again = message_handler(XML.stringToXMLElement(stanza));
 
         // Check results
         expect(run_again).toBeTruthy();
@@ -222,7 +222,7 @@ describe("Badger.Channel.XMPP", function(){
             </event> \
           </message>";
 
-        message_handler(XML.stringToXML(stanza));
+        message_handler(XML.stringToXMLElement(stanza));
 
         // Check results
         expect(sent_node).toEqual('a node');
@@ -249,7 +249,7 @@ describe("Badger.Channel.XMPP", function(){
             </event> \
           </message>";
 
-        message_handler(XML.stringToXML(stanza));
+        message_handler(XML.stringToXMLElement(stanza));
 
         // Check results
         expect(sent_node).toEqual('a node');
@@ -272,7 +272,7 @@ describe("Badger.Channel.XMPP", function(){
             </event> \
           </message>";
 
-        message_handler(XML.stringToXML(stanza));
+        message_handler(XML.stringToXMLElement(stanza));
 
         expect(called).toEqual(0);
       });

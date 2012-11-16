@@ -6,6 +6,7 @@ if (!com.jivatechnology.Badger.Utils) { com.jivatechnology.Badger.Utils = {}; }
 
   this.XML = {
     stringToXML: jQuery.parseXML,
+    stringToXMLElement: function(string){ return this.stringToXML(string).documentElement; },
     XMLToString: function(xmlData){
       try {
         // Standard

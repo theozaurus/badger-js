@@ -113,8 +113,8 @@ if (!com.jivatechnology.Badger.Channel) { com.jivatechnology.Badger.Channel = {}
       var onMessage = function(xml){
         // pick out nodes
         var $xml = $(xml);
-        var service = $xml.find("message").attr("from");
-        $xml.find("message > event[xmlns='http://jabber.org/protocol/pubsub#event'] > items").each(function(i,items){
+        var service = $xml.filter("message").attr("from");
+        $xml.find("event[xmlns='http://jabber.org/protocol/pubsub#event'] > items").each(function(i,items){
           var $items = $(items);
           var node = $items.attr('node');
           var uri = toXmppUri(service,node);
