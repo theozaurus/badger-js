@@ -93,7 +93,6 @@ Or we could add a higher priority XMPP channel:
     var xmpp_channel = new Badger.Channel.XMPP({
       connection: strophe,
       parser:     data_form,
-      pubsub:     'pubsub.foo.bar'
     });
 
     badger.backendPrepend(xmpp_channel);

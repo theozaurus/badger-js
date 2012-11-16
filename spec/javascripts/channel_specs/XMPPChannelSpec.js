@@ -35,12 +35,10 @@ describe("Badger.Channel.XMPP", function(){
 
     it("should accept a configuration object", function(){
       var xmpp    = connection_builder();
-      var pubsub  = "pubsub.test.host";
       var parser  = {};
 
-      var subject = new klass({'connection': xmpp,'pubsub': pubsub, 'parser': parser});
+      var subject = new klass({'connection': xmpp, 'parser': parser});
       expect(subject.connection()).toEqual(xmpp);
-      expect(subject.pubsub()).toEqual(pubsub);
       expect(subject.parser()).toEqual(parser);
     });
 
@@ -51,7 +49,7 @@ describe("Badger.Channel.XMPP", function(){
     beforeEach(function(){
       xmpp    = connection_builder();
       parser  = {parse: function(s){return s;}};
-      subject = new klass({'connection': xmpp, 'pubsub': 'pubsub.test.host', 'parser': parser});
+      subject = new klass({'connection': xmpp, 'parser': parser});
     });
 
     describe("'disconnected'", function(){
@@ -126,7 +124,7 @@ describe("Badger.Channel.XMPP", function(){
         xmpp.addHandler = function(handler){ message_handler = handler; };
 
         parser  = {parse: function(s){return s;}};
-        subject = new klass({'connection': xmpp, 'pubsub': 'pubsub.test.host', 'parser': parser});
+        subject = new klass({'connection': xmpp, 'parser': parser});
       });
 
       it("should register the callback onto the XMPP connection when the first subscription is added", function(){
@@ -150,7 +148,7 @@ describe("Badger.Channel.XMPP", function(){
         subject.subscribe("a new node");
 
         expect( opts.handler ).toBeA("function");
-        expect( opts.from    ).toEqual("pubsub.test.host");
+        expect( opts.from    ).toEqual(null);
         expect( opts.name    ).toEqual("message");
 
         expect( opts.ns      ).toBeNull();
@@ -169,7 +167,7 @@ describe("Badger.Channel.XMPP", function(){
         };
         xmpp.deleteHandler = function(ref){ deregistered_handref = ref; };
 
-        subject = new klass({'connection': xmpp, 'pubsub': 'pubsub.test.host'});
+        subject = new klass({'connection': xmpp});
         subject.subscribe("a node");
         subject.unsubscribe("a node");
 
@@ -188,7 +186,7 @@ describe("Badger.Channel.XMPP", function(){
 
         // Pass stuff to channel
         var stanza = " \
-          <message from='pubsub.shakespeare.lit' to='francisco@denmark.lit' id='foo'> \
+          <message from='pubsub.test.host' to='francisco@denmark.lit' id='foo'> \
             <event xmlns='http://jabber.org/protocol/pubsub#event'> \
               <items node='a node'>" +
                 payload +
@@ -216,7 +214,7 @@ describe("Badger.Channel.XMPP", function(){
 
         // Pass stuff to channel
         var stanza = " \
-          <message from='pubsub.shakespeare.lit' to='francisco@denmark.lit' id='foo'> \
+          <message from='pubsub.test.host' to='francisco@denmark.lit' id='foo'> \
             <event xmlns='http://jabber.org/protocol/pubsub#event'> \
               <items node='a node'> \
                 <item id='1'><payload>foo</payload></item> \
@@ -243,7 +241,7 @@ describe("Badger.Channel.XMPP", function(){
 
         // Pass stuff to channel
         var stanza = " \
-          <message from='pubsub.shakespeare.lit' to='francisco@denmark.lit' id='foo'> \
+          <message from='pubsub.test.host' to='francisco@denmark.lit' id='foo'> \
             <event xmlns='http://jabber.org/protocol/pubsub#event'> \
               <items node='a node'> \
                 <retract id='1'/> \
@@ -266,7 +264,7 @@ describe("Badger.Channel.XMPP", function(){
         subject.onMessage.add(function(){ called += 1; });
 
         var stanza = " \
-          <message from='pubsub.shakespeare.lit' to='francisco@denmark.lit' id='foo'> \
+          <message from='pubsub.test.host' to='francisco@denmark.lit' id='foo'> \
             <event xmlns='http://jabber.org/protocol/pubsub#event'> \
               <items node='a different node'> \
                 <item id='1'><payload>foo</payload></item> \
@@ -324,7 +322,7 @@ describe("Badger.Channel.XMPP", function(){
     beforeEach(function(){
       xmpp = connection_builder();
 
-      subject = new klass({'connection': xmpp, 'pubsub': 'pubsub.test.host', 'parser': {}});
+      subject = new klass({'connection': xmpp, 'parser': {}});
     });
 
     it("should send a subscribe message to the XMPP server", function(){
@@ -391,13 +389,32 @@ describe("Badger.Channel.XMPP", function(){
 
   });
 
+  describe("#xmppUri", function(){
+
+    var xmpp;
+
+    beforeEach(function(){
+      xmpp = connection_builder();
+
+      subject = new klass({'connection': xmpp, 'parser': {}});
+    });
+
+
+    it("should output an xmppUri for a given node based on the connections jid", function(){
+      xmpp.jid = "foo@bar.com";
+
+      expect( subject.xmppUri("node") ).toEqual("xmpp:pubsub.bar.com?;node=node");
+    });
+
+  });
+
   describe("#unsubscribe", function(){
 
     var xmpp;
 
     beforeEach(function(){
       xmpp = connection_builder();
-      subject = new klass({'connection': xmpp, 'pubsub': 'pubsub.test.host', 'parser': {}});
+      subject = new klass({'connection': xmpp, 'parser': {}});
     });
 
     it("should send an unsubscribe message to the XMPP server", function(){

@@ -54,6 +54,22 @@ if (!com.jivatechnology.Badger.Channel) { com.jivatechnology.Badger.Channel = {}
         return ["subscribed","waiting"].indexOf(subscriptions[node]) >= 0;
       };
 
+      var isSubscribedUri = function(uri){
+        return ["subscribed","waiting"].indexOf(subscriptionUris()[uri]) >= 0;
+      };
+
+      var subscriptionUris = function(){
+        var uris = {};
+        for(var node in subscriptions){
+          if(subscriptions.hasOwnProperty(node)){
+            var state = subscriptions[node];
+            var uri = that.xmppUri(node);
+            uris[uri] = state;
+          }
+        }
+        return uris;
+      };
+
       var filterSubscriptions = function(filter){
         var filtered = [];
         for(var node in subscriptions){
@@ -96,12 +112,14 @@ if (!com.jivatechnology.Badger.Channel) { com.jivatechnology.Badger.Channel = {}
 
       var onMessage = function(xml){
         // pick out nodes
-        $(xml).find("event[xmlns='http://jabber.org/protocol/pubsub#event'] > items").each(function(i,items){
+        var $xml = $(xml);
+        var service = $xml.find("message").attr("from");
+        $xml.find("message > event[xmlns='http://jabber.org/protocol/pubsub#event'] > items").each(function(i,items){
           var $items = $(items);
           var node = $items.attr('node');
-
+          var uri = toXmppUri(service,node);
           // check we are interested in said node
-          if(isSubscribed(node)){
+          if(isSubscribedUri(uri)){
             // pick out updated items
             $items.find("> item").each(function(i,item){
               var $item = $(item);
@@ -190,7 +208,7 @@ if (!com.jivatechnology.Badger.Channel) { com.jivatechnology.Badger.Channel = {}
         element_name = "message";
         type         = null;
         id           = null;
-        from         = that.pubsub();
+        from         = null;
         opts         = null;
 
         stropheMessageHandler = that.connection().addHandler( handler, ns, element_name, type, id, from, opts );
@@ -205,14 +223,15 @@ if (!com.jivatechnology.Badger.Channel) { com.jivatechnology.Badger.Channel = {}
 
       //// Stanza builder
       var pubsub_stanza = function(command,node){
-        var c       = that.connection();
-        var service = that.pubsub();
-        var id      = c.getUniqueId('badger');
-        var jid     = c.jid;
+        var c   = that.connection();
+        var uri = that.xmppUri(node);
+        var r   = fromXmppUri(uri);
+        var id  = c.getUniqueId('badger');
+        var jid = c.jid;
 
-        return $iq({to: service, type: 'set', id: id})
+        return $iq({to: r.service, type: 'set', id: id})
           .c('pubsub', {xmlns: 'http://jabber.org/protocol/pubsub' })
-          .c(command, {node: node, jid: jid});
+          .c(command, {node: r.node, jid: jid});
       };
 
       var subscribe_stanza = function(node){
@@ -223,12 +242,30 @@ if (!com.jivatechnology.Badger.Channel) { com.jivatechnology.Badger.Channel = {}
         return pubsub_stanza("unsubscribe",node);
       };
 
+      // XMPP URI encoding / decoding
+
+      var toXmppUri = function(service, node){
+        return "xmpp:" + service + "?;node=" + node;
+      };
+
+      var fromXmppUri = function(uri){
+        results = /^xmpp:([^\?]+)\?;node=([^=]+)$/.exec(uri);
+        return {
+          service: results[1],
+          node:    results[2]
+        };
+      };
+
       // Public methods
 
       this.parser     = function(){ return options.parser;     };
       this.connection = function(){ return options.connection; };
-      this.pubsub     = function(){ return options.pubsub;     };
       this.timeout    = function(){ return options.timeout || 10000; };
+
+      this.xmppUri    = function(node){
+        var service = "pubsub." + Strophe.getDomainFromJid(that.connection().jid);
+        return toXmppUri(service,node);
+      };
 
       this.subscriptions = function(){
         var connected_subscriptions = [];
