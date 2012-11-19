@@ -49,32 +49,21 @@ if (!com.jivatechnology.Badger.Channel) { com.jivatechnology.Badger.Channel = {}
       // Track subscriptions
 
       var subscriptions = {};
+      var subscriptionUris = {};
 
-      var isSubscribed = function(node){
-        return ["subscribed","waiting"].indexOf(subscriptions[node]) >= 0;
+      var isSubscribed = function(name){
+        return ["subscribed","waiting"].indexOf(subscriptions[name]) >= 0;
       };
 
-      var isSubscribedUri = function(uri){
-        return ["subscribed","waiting"].indexOf(subscriptionUris()[uri]) >= 0;
-      };
-
-      var subscriptionUris = function(){
-        var uris = {};
-        for(var node in subscriptions){
-          if(subscriptions.hasOwnProperty(node)){
-            var state = subscriptions[node];
-            var uri = that.xmppUri(node);
-            uris[uri] = state;
-          }
-        }
-        return uris;
+      var uriToName = function(uri){
+        return subscriptionUris[uri];
       };
 
       var filterSubscriptions = function(filter){
         var filtered = [];
-        for(var node in subscriptions){
-          if(subscriptions.hasOwnProperty(node) && subscriptions[node] == filter){
-            filtered.push(node);
+        for(var name in subscriptions){
+          if(subscriptions.hasOwnProperty(name) && subscriptions[name] == filter){
+            filtered.push(name);
           }
         }
         return filtered;
@@ -90,22 +79,25 @@ if (!com.jivatechnology.Badger.Channel) { com.jivatechnology.Badger.Channel = {}
 
       //// Handle subscription state
 
-      var subscriptionPending = function(node){
-        subscriptions[node] = "pending";
+      var subscriptionPending = function(name){
+        subscriptions[name] = "pending";
+        subscriptionUris[that.xmppUri(name)] = name;
       };
 
-      var subscriptionWait = function(node){
-        subscriptions[node] = "waiting";
+      var subscriptionWait = function(name){
+        subscriptions[name] = "waiting";
+        subscriptionUris[that.xmppUri(name)] = name;
       };
 
-      var subscriptionSubscribe = function(node){
+      var subscriptionSubscribe = function(name){
         if(that.subscriptions().length === 0){ addMessageHandler(); }
-        subscriptions[node] = "subscribed";
+        subscriptions[name] = "subscribed";
+        subscriptionUris[that.xmppUri(name)] = name;
       };
 
-      var subscriptionRemove = function(node){
+      var subscriptionRemove = function(name){
         if(that.subscriptions().length == 1){ removeMessageHandler(); }
-        delete subscriptions[node];
+        delete subscriptionUris[that.xmppUri(name)];
       };
 
       // Handle messages
@@ -118,8 +110,9 @@ if (!com.jivatechnology.Badger.Channel) { com.jivatechnology.Badger.Channel = {}
           var $items = $(items);
           var node = $items.attr('node');
           var uri = toXmppUri(service,node);
+          var name = uriToName(uri);
           // check we are interested in said node
-          if(isSubscribedUri(uri)){
+          if(isSubscribed(name)){
             // pick out updated items
             $items.find("> item").each(function(i,item){
               var $item = $(item);
@@ -127,14 +120,14 @@ if (!com.jivatechnology.Badger.Channel) { com.jivatechnology.Badger.Channel = {}
               var id = $item.attr('id');
               var payload = XML.XMLToString(item);
               var parsed = that.parser().parse(payload);
-              that.onMessage.handle(node, id,'update',parsed);
+              that.onMessage.handle(name, id,'update',parsed);
             });
 
             $items.find("> retract").each(function(i,item){
               var $item = $(item);
 
               var id = $item.attr('id');
-              that.onMessage.handle(node, id,'remove');
+              that.onMessage.handle(name, id,'remove');
             });
           }
 
@@ -166,8 +159,8 @@ if (!com.jivatechnology.Badger.Channel) { com.jivatechnology.Badger.Channel = {}
           var pending = subscriptionsPending();
           for(var i in pending){
             if(pending.hasOwnProperty(i)){
-              var node = pending[i];
-              that.subscribe(node);
+              var name = pending[i];
+              that.subscribe(name);
             }
           }
         }
@@ -180,11 +173,11 @@ if (!com.jivatechnology.Badger.Channel) { com.jivatechnology.Badger.Channel = {}
           var subscribed = subscriptionsSubscribed();
           for(var i in subscribed){
             if(subscribed.hasOwnProperty(i)){
-              var node = subscribed[i];
+              var name = subscribed[i];
               // Move subscribed subscriptions to pending
-              subscriptionPending(node);
+              subscriptionPending(name);
               // trigger onSubscribeFailure
-              that.onSubscribeFailure.handle(node);
+              that.onSubscribeFailure.handle(name);
             }
           }
         }
@@ -222,9 +215,9 @@ if (!com.jivatechnology.Badger.Channel) { com.jivatechnology.Badger.Channel = {}
       };
 
       //// Stanza builder
-      var pubsub_stanza = function(command,node){
+      var pubsub_stanza = function(command,name){
         var c   = that.connection();
-        var uri = that.xmppUri(node);
+        var uri = that.xmppUri(name);
         var r   = fromXmppUri(uri);
         var id  = c.getUniqueId('badger');
         var jid = c.jid;
@@ -234,18 +227,18 @@ if (!com.jivatechnology.Badger.Channel) { com.jivatechnology.Badger.Channel = {}
           .c(command, {node: r.node, jid: jid});
       };
 
-      var subscribe_stanza = function(node){
-        return pubsub_stanza("subscribe",node);
+      var subscribe_stanza = function(name){
+        return pubsub_stanza("subscribe",name);
       };
 
-      var unsubscribe_stanza = function(node){
-        return pubsub_stanza("unsubscribe",node);
+      var unsubscribe_stanza = function(name){
+        return pubsub_stanza("unsubscribe",name);
       };
 
       // XMPP URI encoding / decoding
 
-      var toXmppUri = function(service, node){
-        return "xmpp:" + service + "?;node=" + node;
+      var toXmppUri = function(service, name){
+        return "xmpp:" + service + "?;node=" + name;
       };
 
       var fromXmppUri = function(uri){
@@ -262,9 +255,9 @@ if (!com.jivatechnology.Badger.Channel) { com.jivatechnology.Badger.Channel = {}
       this.connection = function(){ return options.connection; };
       this.timeout    = function(){ return options.timeout || 10000; };
 
-      this.xmppUri    = function(node){
+      this.xmppUri    = function(name){
         var service = "pubsub." + Strophe.getDomainFromJid(that.connection().jid);
-        return toXmppUri(service,node);
+        return toXmppUri(service,name);
       };
 
       this.subscriptions = function(){
@@ -277,42 +270,42 @@ if (!com.jivatechnology.Badger.Channel) { com.jivatechnology.Badger.Channel = {}
         return connected_subscriptions;
       };
 
-      this.subscribe = function(node){
-        if(!isSubscribed(node)){
-          var stanza  = subscribe_stanza(node);
+      this.subscribe = function(name){
+        if(!isSubscribed(name)){
+          var stanza  = subscribe_stanza(name);
 
           var success = function(){
-            subscriptionSubscribe(node);
-            that.onSubscribeSuccess.handle(node);
+            subscriptionSubscribe(name);
+            that.onSubscribeSuccess.handle(name);
           };
 
           var failure = function(){
-            subscriptionRemove(node);
-            that.onSubscribeFailure.handle(node);
+            subscriptionRemove(name);
+            that.onSubscribeFailure.handle(name);
           };
 
-          subscriptionPending(node);
+          subscriptionPending(name);
 
           if(isStatusOffline()){
-            that.onSubscribeFailure.handle(node);
+            that.onSubscribeFailure.handle(name);
           } else {
-            subscriptionWait(node);
+            subscriptionWait(name);
             that.connection().sendIQ(stanza,success,failure,that.timeout());
           }
         }
       };
 
-      this.unsubscribe = function(node){
-        if(isSubscribed(node)){
-          var stanza = unsubscribe_stanza(node);
+      this.unsubscribe = function(name){
+        if(isSubscribed(name)){
+          var stanza = unsubscribe_stanza(name);
 
           var success = function(){
-            subscriptionRemove(node);
-            that.onUnsubscribeSuccess.handle(node);
+            subscriptionRemove(name);
+            that.onUnsubscribeSuccess.handle(name);
           };
 
           var failure = function(){
-            that.onUnsubscribeFailure.handle(node);
+            that.onUnsubscribeFailure.handle(name);
           };
 
           that.connection().sendIQ(stanza,success,failure,that.timeout());
