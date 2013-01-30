@@ -127,6 +127,15 @@ if (!com.jivatechnology.Badger.Channel) { com.jivatechnology.Badger.Channel = {}
 
       this.urlFor = function(node){ return node; };
 
+      // Used if we have extra information that a node is likely to have been
+      // updated - will cause a poll to happen immediately
+      this.hint = function(node){
+        if(isSubscribed(node)){
+          clearPoll(node);
+          poll(node);
+        }
+      };
+
       this.subscriptions = function(){
         var connected_subscriptions = [];
         for(var n in subscriptions){

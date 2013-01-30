@@ -150,6 +150,22 @@ describe("Badger.Coordinator",function(){
     });
   });
 
+  describe("#hint", function(){
+    it("should called #hint on the subscribed backends", function(){
+      var called = false;
+      var b1 = backend_builder();
+
+      b1.hint = function(){ called = true; };
+
+      subject.backendPrepend(b1);
+      subject.subscribe("node");
+
+      subject.hint("node");
+
+      expect(called).toBeTruthy();
+    });
+  });
+
   describe("#subscriptions", function(){
 
     beforeEach(function(){

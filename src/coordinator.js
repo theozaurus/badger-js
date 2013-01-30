@@ -155,6 +155,21 @@
 
       //// Subscriptions
 
+      ///// Used if we know that a node has actually changed
+      ///// Useful for backends that are not push
+      this.hint = function(node){
+        var subscriptionList = subscriptions[node];
+        if( typeof subscriptionList === "undefined"){ return; }
+        subscribed = subscriptionList.backendsSubscribed();
+        for(var i = 0; i < subscribed.length; i++){
+          b = subscribed[i];
+          // Test backend supports hint
+          if(typeof b.hint === "function"){
+            b.hint(node);
+          }
+        }
+      };
+
       this.subscriptions = function(){
         var result = {};
         for(var n in subscriptions){

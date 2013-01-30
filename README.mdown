@@ -101,6 +101,14 @@ Adding a new channel will cause any failed subscriptions to be retried. Also
 changing the priority of channels will cause subscriptions to be renegotiated
 so that the best one is used that works.
 
+Some channels like the Polled Atom feed do not really support `push`. These
+channels can have an extra method called `hint`. This allows `hint` to be called
+when you know there is new content available which triggers a check immediately.
+This means the next schedulded poll does not have to execute before the update
+can be discovered.
+
+  badger.hint("node/i/know/has/been/updated")
+
 Tests
 =====
 

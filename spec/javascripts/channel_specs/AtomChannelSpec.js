@@ -165,6 +165,72 @@ describe("Badger.Channel.Atom", function(){
 
   });
 
+  describe("#hint", function(){
+    var node;
+
+    beforeEach(function(){
+      node    = "some/node";
+      parser  = {parse: function(s){return s;}};
+      // Delay is so large it won't get called unless #hint is used
+      subject = new klass({parser: parser, delay: 100000000});
+
+      runs(function(){
+        var feed = '\
+          <feed xmlns="http://www.w3.org/2005/Atom">\
+            <title>Some Node</title>\
+            <link href="http://test.host"/>\
+            <updated>2012-09-30T11:19:01Z</updated>\
+            <author><name>John Doe</name></author>\
+            <id>test.host,some_node</id>\
+          </feed>';
+
+        Mooch.stub_request('GET', node).returns({ body: feed });
+
+        subject.subscribe(node);
+      });
+
+      waitsFor(function(){
+        return subject.subscriptions().length == 1;
+      });
+    });
+
+    it("should poll the node immediately", function(){
+      var called = false;
+
+      runs(function(){
+        entry = '<entry xmlns="http://www.w3.org/2005/Atom"> \
+            <id>1</id>\
+            <title>Item 1</title>\
+            <author><name>John Does</name></author>\
+            <updated>2012-09-30T11:10:00Z</updated>\
+            <summary>Some data</summary> \
+          </entry>';
+
+        feed = '\
+          <feed xmlns="http://www.w3.org/2005/Atom">\
+            <title>Some Node</title>\
+            <link href="http://test.host"/>\
+            <updated>2012-09-30T11:19:01Z</updated>\
+            <author><name>John Doe</name></author>\
+            <id>test.host,some_node</id>' + entry + '</feed>';
+
+        Mooch.stub_request('GET', node).returns({ body: feed });
+
+        subject.onMessage.add(function(){ called = true;});
+
+        subject.hint(node);
+      });
+
+      waitsFor(function(){
+        return called;
+      });
+
+      runs(function(){
+        expect(called).toEqual(true);
+      });
+    });
+  });
+
   describe("#subscriptions", function(){
 
     var feed;
