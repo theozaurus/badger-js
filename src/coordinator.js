@@ -70,12 +70,10 @@
 
       var backendSort = function(unsorted){
         var sorted = [];
-        for(var i in backends){
-          if(backends.hasOwnProperty(i)){
-            var backend = backends[i];
-            if(unsorted.indexOf(backend) >= 0){
-              sorted.push(backends[i]);
-            }
+        for(var i = 0; i < backends.length; i++){
+          var backend = backends[i];
+          if(unsorted.indexOf(backend) >= 0){
+            sorted.push(backends[i]);
           }
         }
         return sorted;
@@ -130,11 +128,9 @@
       var unsubscribeBackendsFor = function(node){
         var subscriptionList = subscriptions[node];
         subscribed = subscriptionList.backendsSubscribed();
-        for(var ii in subscribed){
-          if(subscribed.hasOwnProperty(ii)){
-            b = subscribed[ii];
-            b.unsubscribe(node);
-          }
+        for(var i = 0; i < subscribed.length; i++){
+          b = subscribed[i];
+          b.unsubscribe(node);
         }
       };
 
@@ -143,11 +139,9 @@
         subscribed = subscriptionList.backendsSubscribed();
         var sorted = backendSort(subscribed);
         sorted.shift(); // ignore highest priority subscribed
-        for(var i in sorted){
-          if(sorted.hasOwnProperty(i)){
-            var b = sorted[i];
-            b.unsubscribe(node);
-          }
+        for(var i = 0; i < sorted.length; i++){
+          var b = sorted[i];
+          b.unsubscribe(node);
         }
       };
 
