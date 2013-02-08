@@ -69,7 +69,7 @@ if (!com.jivatechnology.Badger.Parser) { com.jivatechnology.Badger.Parser = {}; 
       var ruleSet = rules[type] || {};
 
       if(!(ruleSet.attributes || ruleSet.required || ruleSet.optional || ruleSet.many)){
-        var payload = XML.XMLContentsToString($input[0]);
+        var payload = $input[0].textContent;
         if(ruleSet.parser){
           payload = ruleSet.parser(payload);
         }

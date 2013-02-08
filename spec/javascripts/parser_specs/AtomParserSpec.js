@@ -47,7 +47,7 @@ describe("Badger.Parser.Atom", function(){
              </author> \
            </source> \
            <rights>Copyright (c) 2003, Mark Pilgrim</rights> \
-           <content type="xhtml" xml:lang="en" xml:base="http://diveintomark.org/"><div xmlns="http://www.w3.org/1999/xhtml"><p><i>[Update: The Atom draft is finished.]</i></p></div></content> \
+           <content type="xhtml" xml:lang="en" xml:base="http://diveintomark.org/">&lt;div xmlns="http://www.w3.org/1999/xhtml"&gt;&lt;p&gt;&lt;i&gt;[Update: The Atom draft is finished.]&lt;/i&gt;&lt;/p&gt;&lt;/div&gt;</content> \
          </entry>';
 
       var expected = {
