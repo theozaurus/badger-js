@@ -19,14 +19,8 @@ if (!com.jivatechnology.Badger.Utils) { com.jivatechnology.Badger.Utils = {}; }
     },
     XMLContentsToString: function(xmlData){
       try {
-        var nodes = xmlData.childNodes;
-        var string = "";
-        for(var i in nodes){
-          if(nodes.hasOwnProperty(i)){
-            string += this.XMLToString(nodes[i]);
-          }
-        }
-        return string;
+        var s = xmlData.hasOwnProperty('textContent') ? xmlData.textContent : xmlData.innerText;
+        return s;
       } catch (e) {
         return false;
       }

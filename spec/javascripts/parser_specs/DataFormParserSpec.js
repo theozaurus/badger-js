@@ -21,7 +21,7 @@ describe("Badger.Parser.DataForm", function(){
         "<item id='10'> \
           <x xmlns='jabber:x:data' type='form'> \
             <title>Bot Configuration</title> \
-            <instructions>Fill out this form to configure your new bot!</instructions> \
+            <instructions>Fill out this form to &lt;i&gt;configure&lt;/i&gt; your new bot!</instructions> \
             <field type='hidden' \
                    var='FORM_TYPE'> \
               <value>jabber:bot</value> \
@@ -76,7 +76,7 @@ describe("Badger.Parser.DataForm", function(){
 
       var result = {
         "title":        "Bot Configuration",
-        "instructions": "Fill out this form to configure your new bot!",
+        "instructions": "Fill out this form to <i>configure</i> your new bot!",
         "fields": {
           "FORM_TYPE":   "jabber:bot",
           "botname":     null,
