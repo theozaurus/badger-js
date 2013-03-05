@@ -102,11 +102,9 @@ if (!com.jivatechnology.Badger.Channel) { com.jivatechnology.Badger.Channel = {}
 
       // Handle messages
 
-      var onMessage = function(xml){
-        // pick out nodes
-        var $xml = $(xml);
-        var service = $xml.filter("message").attr("from");
-        $xml.find("event[xmlns='http://jabber.org/protocol/pubsub#event'] > items").each(function(i,items){
+      var processItems = function(service,$xml){
+        var selector = "event[xmlns='http://jabber.org/protocol/pubsub#event'] > items";
+        $xml.find(selector).each(function(i,items){
           var $items = $(items);
           var node = $items.attr('node');
           var uri = toXmppUri(service,node);
@@ -130,8 +128,50 @@ if (!com.jivatechnology.Badger.Channel) { com.jivatechnology.Badger.Channel = {}
               that.onMessage.handle(name, id,'remove');
             });
           }
-
         });
+      };
+
+      // If this spots we are subscribed multiple times - this will unsubscribe
+      // us so that there is only one subscription left.
+      // This can occur there is a page reload, and we persist our XMPP
+      // connection - but we loose track of what we were subscribed to.
+      var processShimHeaders = function(service,$xml){
+        var selector = "headers[xmlns='http://jabber.org/protocol/shim']";
+        $xml.find(selector).each(function(i,header){
+          var $header    = $(header);
+          var collection = $header.find("> header[name='Collection']");
+          var node       = collection.text();
+
+          var uri  = toXmppUri(service,node);
+          var name = uriToName(uri);
+
+          // Find header we are interested in
+          if(collection.length > 0 && isSubscribed(name)){
+            // Get subscription ids
+            var sub_ids = $header.find("> header[name='SubID']").
+                         map(function(i,header){ return $(header).text(); }).
+                         toArray();
+
+            // Discard first one
+            sub_ids.shift();
+
+            // Unsubscribe the rest
+            $(sub_ids).each(function(i,subid){
+              var stanza = unsubscribe_stanza(name,subid);
+              var success = function(){}; // Managed to remove extra subscription
+              var failure = function(){}; // Failed to remove extra subscription
+              that.connection().sendIQ(stanza,success,failure,that.timeout());
+            });
+          }
+        });
+      };
+
+      var onMessage = function(xml){
+        // pick out nodes
+        var $xml = $(xml);
+        var service = $xml.filter("message").attr("from");
+        processItems(service,$xml);
+        processShimHeaders(service,$xml);
 
         // Strophe needs this
         return true;
@@ -215,24 +255,30 @@ if (!com.jivatechnology.Badger.Channel) { com.jivatechnology.Badger.Channel = {}
       };
 
       //// Stanza builder
-      var pubsub_stanza = function(command,name){
+      var pubsub_stanza = function(command,name,subid){
         var c   = that.connection();
         var uri = that.xmppUri(name);
         var r   = fromXmppUri(uri);
         var id  = c.getUniqueId('badger');
         var jid = c.jid;
 
+        var attributes = { node: r.node, jid:  jid };
+
+        if(typeof subid == "string"){
+          attributes['subid'] = subid;
+        }
+
         return $iq({to: r.service, type: 'set', id: id})
           .c('pubsub', {xmlns: 'http://jabber.org/protocol/pubsub' })
-          .c(command, {node: r.node, jid: jid});
+          .c(command, attributes);
       };
 
       var subscribe_stanza = function(name){
         return pubsub_stanza("subscribe",name);
       };
 
-      var unsubscribe_stanza = function(name){
-        return pubsub_stanza("unsubscribe",name);
+      var unsubscribe_stanza = function(name,subid){
+        return pubsub_stanza("unsubscribe",name,subid);
       };
 
       // XMPP URI encoding / decoding

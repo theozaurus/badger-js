@@ -277,6 +277,36 @@ describe("Badger.Channel.XMPP", function(){
         expect(called).toEqual(0);
       });
 
+      it("should send unsubscribe stanzas if multiple subscriptions exist", function(){
+        // Setup subscription
+        subject.subscribe("a node");
+
+        // Pass stuff to channel
+        var stanza = " \
+          <message from='pubsub.test.host' to='francisco@denmark.lit' id='foo'> \
+            <event xmlns='http://jabber.org/protocol/pubsub#event'> \
+              <items node='a node'> \
+                <retract id='1'/> \
+              </items> \
+            </event> \
+            <headers xmlns='http://jabber.org/protocol/shim'> \
+              <header name='Collection'>a node</header> \
+              <header name='SubID'>1</header> \
+              <header name='SubID'>2</header> \
+            </headers> \
+          </message>";
+
+        var sent = "";
+        xmpp.sendIQ = function(iq){ sent = iq.toString(); };
+
+        message_handler(XML.stringToXMLElement(stanza));
+
+        var expectedStanza =
+          "<iq to='pubsub.test.host' type='set' id='1' xmlns='jabber:client'><pubsub xmlns='http://jabber.org/protocol/pubsub'><unsubscribe node='a node' jid='foo@test.host/123' subid='2'/></pubsub></iq>";
+
+        expect(sent).beEquivalentTo(expectedStanza);
+      });
+
     });
 
   });
