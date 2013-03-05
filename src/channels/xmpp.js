@@ -192,7 +192,7 @@ if (!com.jivatechnology.Badger.Channel) { com.jivatechnology.Badger.Channel = {}
 
       var status = "offline";
       var statusOnline = function(){
-        if(status == "offline"){
+        if(isStatusOffline()){
           status = "online";
 
           // Attempt pending subscriptions
@@ -207,7 +207,7 @@ if (!com.jivatechnology.Badger.Channel) { com.jivatechnology.Badger.Channel = {}
       };
 
       var statusOffline = function(){
-        if(status == "online"){
+        if(isStatusOnline()){
           status = "offline";
 
           var subscribed = subscriptionsSubscribed();
