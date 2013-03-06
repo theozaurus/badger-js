@@ -1,9 +1,16 @@
 //= require callback
 //= require ./subscription_list
+//= require ./logger
 
 (function(){
 
   var scope = this;
+
+  var logger = function(level){
+    var args = Array.prototype.slice.call(arguments,1);
+    args.unshift('Badger Coordinator:');
+    scope.Logger[level].apply(this,args);
+  };
 
   this.Coordinator = (function(){
 
@@ -22,6 +29,7 @@
 
       var setupBackend = function(b){
         b.onSubscribeSuccess.add(function(n){
+          logger('debug','Subscribed to "'+n+'" on backend "'+b.name+'"');
           updateSubscription(n,b,'subscribed');
           pareBackendFor(n);
 
@@ -32,6 +40,7 @@
         });
 
         b.onSubscribeFailure.add(function(n){
+          logger('warn','Failed to subscribed to "'+n+'" with backend "'+b.name+'"');
           updateSubscription(n,b,'failed');
           subscribeBackendFor(n);
 
@@ -44,6 +53,7 @@
         });
 
         b.onUnsubscribeSuccess.add(function(n){
+          logger('debug','Unsubscribed from "'+n+'" on backend "'+b.name+'"');
           updateSubscription(n,b,'unsubscribed');
 
           // Tell the world
@@ -54,6 +64,8 @@
         });
 
         b.onUnsubscribeFailure.add(function(n){
+          logger('warn','Failed to unsubscribe from "'+n+'" on backend "'+b.name+'"');
+
           // Tell the world
           var sub = subscriptions[n];
           if(sub.stateRequired() != 'subscribed' && sub.stateAchieved() == 'subscribed'){
@@ -117,10 +129,12 @@
         if( untried.length > 0 ){
           // Try highest priority
           b = backendSort(untried).shift();
+          logger('debug','Trying to subscribe to "'+node+'" with backend "'+b.name+'"');
           b.subscribe(node);
         } else {
           // Out of luck
           that.onSubscribeFailure.handle(node);
+          logger('debug','No other backends available for subscription "'+node+'"');
         }
         return b;
       };
@@ -141,6 +155,7 @@
         sorted.shift(); // ignore highest priority subscribed
         for(var i = 0; i < sorted.length; i++){
           var b = sorted[i];
+          logger('debug','Pairing subscription to "'+node+'" on backend "'+b.name+'" as no longer required');
           b.unsubscribe(node);
         }
       };

@@ -122,6 +122,8 @@ if (!com.jivatechnology.Badger.Channel) { com.jivatechnology.Badger.Channel = {}
 
       // Public methods
 
+      this.name = 'Atom';
+
       this.parser = function(){ return options.parser; };
       this.delay  = function(){ return options.delay || 3000; };
 

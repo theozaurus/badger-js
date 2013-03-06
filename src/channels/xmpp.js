@@ -1,12 +1,20 @@
 //= require callback
 //= require strophe
+//= require ../logger
 //= require ../utils/xml
 
 if (!com.jivatechnology.Badger.Channel) { com.jivatechnology.Badger.Channel = {}; }
 
 (function(){
 
-  var XML = com.jivatechnology.Badger.Utils.XML;
+  var scope = this;
+  var XML   = scope.Utils.XML;
+
+  var logger = function(level){
+    var args = Array.prototype.slice.call(arguments,1);
+    args.unshift('Badger XMPP Channel:');
+    scope.Logger[level].apply(this,args);
+  };
 
   //
   // Code to help signal status back to our channel from Strophe
@@ -39,7 +47,7 @@ if (!com.jivatechnology.Badger.Channel) { com.jivatechnology.Badger.Channel = {}
   // The channel
   //
 
-  this.XMPP = (function(){
+  this.Channel.XMPP = (function(){
 
     return function(options){
       options = options || {};
@@ -111,13 +119,21 @@ if (!com.jivatechnology.Badger.Channel) { com.jivatechnology.Badger.Channel = {}
           var name = uriToName(uri);
           // check we are interested in said node
           if(isSubscribed(name)){
+            logger('debug','Got message for subscription "'+name+'"');
             // pick out updated items
             $items.find("> item").each(function(i,item){
               var $item = $(item);
 
               var id = $item.attr('id');
               var payload = XML.XMLToString(item);
-              var parsed = that.parser().parse(payload);
+              var parsed;
+
+              // External code
+              try {
+                parsed = that.parser().parse(payload);
+              } catch (e) {
+                logger('error','The parser threw the error',e);
+              }
               that.onMessage.handle(name, id,'update',parsed);
             });
 
@@ -127,6 +143,8 @@ if (!com.jivatechnology.Badger.Channel) { com.jivatechnology.Badger.Channel = {}
               var id = $item.attr('id');
               that.onMessage.handle(name, id,'remove');
             });
+          } else {
+            logger('warn','Got message for unknown subscription. URI is "'+uri+'"');
           }
         });
       };
@@ -193,6 +211,7 @@ if (!com.jivatechnology.Badger.Channel) { com.jivatechnology.Badger.Channel = {}
       var status = "offline";
       var statusOnline = function(){
         if(isStatusOffline()){
+          logger("debug","Online");
           status = "online";
 
           // Attempt pending subscriptions
@@ -208,6 +227,7 @@ if (!com.jivatechnology.Badger.Channel) { com.jivatechnology.Badger.Channel = {}
 
       var statusOffline = function(){
         if(isStatusOnline()){
+          logger("debug","Offline");
           status = "offline";
 
           var subscribed = subscriptionsSubscribed();
@@ -297,6 +317,8 @@ if (!com.jivatechnology.Badger.Channel) { com.jivatechnology.Badger.Channel = {}
 
       // Public methods
 
+      this.name       = 'XMPP';
+
       this.parser     = function(){ return options.parser;     };
       this.connection = function(){ return options.connection; };
       this.timeout    = function(){ return options.timeout || 10000; };
@@ -321,11 +343,13 @@ if (!com.jivatechnology.Badger.Channel) { com.jivatechnology.Badger.Channel = {}
           var stanza  = subscribe_stanza(name);
 
           var success = function(){
+            logger('debug','Subscribed to "'+name+'"');
             subscriptionSubscribe(name);
             that.onSubscribeSuccess.handle(name);
           };
 
           var failure = function(){
+            logger('warn','Failed to subscribe to "'+name+'"');
             subscriptionRemove(name);
             that.onSubscribeFailure.handle(name);
           };
@@ -346,11 +370,13 @@ if (!com.jivatechnology.Badger.Channel) { com.jivatechnology.Badger.Channel = {}
           var stanza = unsubscribe_stanza(name);
 
           var success = function(){
+            logger('debug','Unsubscribed from "'+name+'"');
             subscriptionRemove(name);
             that.onUnsubscribeSuccess.handle(name);
           };
 
           var failure = function(){
+            logger('warn','Failed to unsubscribe from "'+name+'"');
             that.onUnsubscribeFailure.handle(name);
           };
 
@@ -374,4 +400,4 @@ if (!com.jivatechnology.Badger.Channel) { com.jivatechnology.Badger.Channel = {}
 
   })();
 
-}).call(com.jivatechnology.Badger.Channel);
+}).call(com.jivatechnology.Badger);
