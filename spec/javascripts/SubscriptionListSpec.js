@@ -159,7 +159,7 @@ describe("SubscriptionList",function(){
     });
 
     describe("#backendsUntried", function(){
-      it("should return the backends that have not attempted a connection", function(){
+      it("should return the backends that have not attempted a connection, or are unsubscribed", function(){
         var b1 = backend_builder();
         var b2 = backend_builder();
         var b3 = backend_builder();
@@ -176,6 +176,9 @@ describe("SubscriptionList",function(){
 
         subject.updateSubscription(b3,'subscribed');
         expect(subject.backendsUntried()).toEqual([]);
+
+        subject.updateSubscription(b3,'unsubscribed');
+        expect(subject.backendsUntried()).toEqual([b3]);
       });
     });
 

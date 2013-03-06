@@ -110,7 +110,8 @@
 
       this.backendsUntried = function(){
         return backendsFilter(function(results,backend){
-          if(!that.stateFor(backend)){
+          var state = that.stateFor(backend);
+          if(typeof state == 'undefined' || state == "unsubscribed"){
             results.push(backend);
           }
         });

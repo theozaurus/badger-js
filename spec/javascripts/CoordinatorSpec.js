@@ -5,9 +5,10 @@ describe("Badger.Coordinator",function(){
   var subject;
 
   // Minimal dummy backend
-  var backend_builder = function(){
+  var backend_builder = function(name){
     var subscriptions = [];
     return {
+      name: name,
       subscriptions: function(){
         return subscriptions;
       },
@@ -32,6 +33,44 @@ describe("Badger.Coordinator",function(){
     b.subscribe = function(n){ b.onSubscribeFailure.handle(n); };
     return b;
   };
+
+  describe("events", function(){
+
+    describe("when a high priority backend flaps", function(){
+
+      it("should retry the lower priority backend", function(){
+        b1 = backend_builder('b1');
+        b2 = backend_builder('b2');
+
+        subject = new klass();
+        subject.backendAppend(b1);
+        subject.backendAppend(b2);
+
+        // Success b1
+        subject.subscribe('foo');
+
+        // Simulate b1 failure
+        b1.onSubscribeFailure.handle('foo');
+
+        // Check b2 connects
+        expect( b2.subscriptions() ).toEqual(['foo']);
+
+        // b1 retries and succeeds
+        b1.onSubscribeSuccess.handle('foo');
+
+        // Check b2 unsubscribes
+        expect( b2.subscriptions() ).toEqual([]);
+
+        // Simulate b1 failure
+        b1.onSubscribeFailure.handle('foo');
+
+        // Check b2 connects
+        expect( b2.subscriptions() ).toEqual(['foo']);
+      });
+
+    });
+
+  });
 
   describe("#backends", function(){
     var b1, b2;
