@@ -60,7 +60,11 @@ if (!com.jivatechnology.Badger.Channel) { com.jivatechnology.Badger.Channel = {}
       var subscriptionUris = {};
 
       var isSubscribed = function(name){
-        return ["subscribed","waiting"].indexOf(subscriptions[name]) >= 0;
+        return ["subscribed"].indexOf(subscriptions[name]) >= 0;
+      };
+
+      var isRecognised = function(name){
+        return subscriptions.hasOwnProperty(name);
       };
 
       var uriToName = function(uri){
@@ -85,15 +89,14 @@ if (!com.jivatechnology.Badger.Channel) { com.jivatechnology.Badger.Channel = {}
         return filterSubscriptions("subscribed");
       };
 
+      var subscriptionsFailed = function(){
+        return filterSubscriptions("failed");
+      };
+
       //// Handle subscription state
 
       var subscriptionPending = function(name){
         subscriptions[name] = "pending";
-        subscriptionUris[that.xmppUri(name)] = name;
-      };
-
-      var subscriptionWait = function(name){
-        subscriptions[name] = "waiting";
         subscriptionUris[that.xmppUri(name)] = name;
       };
 
@@ -103,9 +106,74 @@ if (!com.jivatechnology.Badger.Channel) { com.jivatechnology.Badger.Channel = {}
         subscriptionUris[that.xmppUri(name)] = name;
       };
 
+      var subscriptionFailure = function(name){
+        subscriptions[name] = "failed";
+        subscriptionUris[that.xmppUri(name)] = name;
+      };
+
       var subscriptionRemove = function(name){
         if(that.subscriptions().length == 1){ removeMessageHandler(); }
+        delete subscriptions[name];
         delete subscriptionUris[that.xmppUri(name)];
+      };
+
+      //// Handling subscription state changes
+
+      var subscribe = function(name){
+        var stanza  = subscribe_stanza(name);
+
+        var success = function(){ onSubscribeSuccess(name); };
+        var failure = function(s){
+          // Check this hasn't failed from a timeout
+          // and we are already subscribed with another message
+          var timedout = s === null;
+          if(!(timedout && isSubscribed(name))){ onSubscribeFailure(name); }
+        };
+
+        subscriptionPending(name);
+
+        if(isStatusOffline()){
+          failure();
+        } else {
+          that.connection().sendIQ(stanza,success,failure,that.timeout());
+        }
+      };
+
+      var unsubscribe = function(name){
+        var stanza = unsubscribe_stanza(name);
+
+        var success = function(){ onUnsubscribeSuccess(name); };
+        var failure = function(s){
+          // Check this hasn't failed from a timeout
+          // and we are already unsubscribed with another message
+          var timedout = s === null;
+          if(!(timedout && !isRecognised(name))){ onUnsubscribeFailure(name); }
+        };
+
+        that.connection().sendIQ(stanza,success,failure,that.timeout());
+      };
+
+      var onSubscribeSuccess = function(name){
+        logger('debug','Subscribed to "'+name+'"');
+        subscriptionSubscribe(name);
+        that.onSubscribeSuccess.handle(name);
+      };
+
+      var onSubscribeFailure = function(name){
+        logger('warn','Failed to subscribe to "'+name+'"');
+        subscriptionFailure(name);
+        that.onSubscribeFailure.handle(name);
+      };
+
+      var onUnsubscribeSuccess = function(name){
+        logger('debug','Unsubscribed from "'+name+'"');
+        subscriptionRemove(name);
+        that.onUnsubscribeSuccess.handle(name);
+      };
+
+      var onUnsubscribeFailure = function(name){
+        logger('warn','Failed to unsubscribe from "'+name+'"');
+        that.onUnsubscribeFailure.handle(name);
       };
 
       // Handle messages
@@ -214,13 +282,12 @@ if (!com.jivatechnology.Badger.Channel) { com.jivatechnology.Badger.Channel = {}
           logger("debug","Online");
           status = "online";
 
-          // Attempt pending subscriptions
-          var pending = subscriptionsPending();
-          for(var i in pending){
-            if(pending.hasOwnProperty(i)){
-              var name = pending[i];
-              that.subscribe(name);
-            }
+          // Attempt failed subscriptions
+          var pending = subscriptionsFailed();
+          var size    = pending.length;
+          for(var i=0; i < size; i++){
+            var name = pending[i];
+            subscribe(name);
           }
         }
       };
@@ -230,14 +297,10 @@ if (!com.jivatechnology.Badger.Channel) { com.jivatechnology.Badger.Channel = {}
           logger("debug","Offline");
           status = "offline";
 
-          var subscribed = subscriptionsSubscribed();
-          for(var i in subscribed){
-            if(subscribed.hasOwnProperty(i)){
-              var name = subscribed[i];
-              // Move subscribed subscriptions to pending
-              subscriptionPending(name);
-              // trigger onSubscribeFailure
-              that.onSubscribeFailure.handle(name);
+          for(var name in subscriptions){
+            if(subscriptions.hasOwnProperty(name)){
+              if(isSubscribed(name)){ subscriptionPending(name); }
+              onSubscribeFailure(name);
             }
           }
         }
@@ -339,49 +402,11 @@ if (!com.jivatechnology.Badger.Channel) { com.jivatechnology.Badger.Channel = {}
       };
 
       this.subscribe = function(name){
-        if(!isSubscribed(name)){
-          var stanza  = subscribe_stanza(name);
-
-          var success = function(){
-            logger('debug','Subscribed to "'+name+'"');
-            subscriptionSubscribe(name);
-            that.onSubscribeSuccess.handle(name);
-          };
-
-          var failure = function(){
-            logger('warn','Failed to subscribe to "'+name+'"');
-            subscriptionRemove(name);
-            that.onSubscribeFailure.handle(name);
-          };
-
-          subscriptionPending(name);
-
-          if(isStatusOffline()){
-            that.onSubscribeFailure.handle(name);
-          } else {
-            subscriptionWait(name);
-            that.connection().sendIQ(stanza,success,failure,that.timeout());
-          }
-        }
+        if(!isRecognised(name)){ subscribe(name); }
       };
 
       this.unsubscribe = function(name){
-        if(isSubscribed(name)){
-          var stanza = unsubscribe_stanza(name);
-
-          var success = function(){
-            logger('debug','Unsubscribed from "'+name+'"');
-            subscriptionRemove(name);
-            that.onUnsubscribeSuccess.handle(name);
-          };
-
-          var failure = function(){
-            logger('warn','Failed to unsubscribe from "'+name+'"');
-            that.onUnsubscribeFailure.handle(name);
-          };
-
-          that.connection().sendIQ(stanza,success,failure,that.timeout());
-        }
+        if(isSubscribed(name)){ unsubscribe(name); }
       };
 
       // Callbacks

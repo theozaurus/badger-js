@@ -67,6 +67,21 @@ describe("Badger.Channel.XMPP", function(){
         expect(failed).toEqual("node1");
       });
 
+      it("should trigger onFailure callbacks for 'pending' subscriptions", function(){
+        var failed = false;
+
+        xmpp.sendIQ = function(s,success,failure){},
+
+        subject.subscribe("node1");
+        subject.onSubscribeFailure.add(function(n){ failed = n;});
+
+        expect(failed).toBeFalsy();
+
+        stropheBadgerPlugin.statusChanged(Strophe.Status.DISCONNECTED);
+
+        expect(failed).toEqual("node1");
+      });
+
     });
 
     describe("'connected'", function(){
