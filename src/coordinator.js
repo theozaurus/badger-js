@@ -43,13 +43,6 @@
           logger('warn','Failed to subscribed to "'+n+'" with backend "'+b.name+'"');
           updateSubscription(n,b,'failed');
           subscribeBackendFor(n);
-
-          // Tell the world
-          if(subscriptions[n].stateRequired == 'subscribed'){
-            if(!subscribeBackendFor(n)){
-              that.onSubscribeFailure.handle(n);
-            }
-          }
         });
 
         b.onUnsubscribeSuccess.add(function(n){
