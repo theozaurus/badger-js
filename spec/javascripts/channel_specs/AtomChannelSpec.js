@@ -16,12 +16,14 @@ describe("Badger.Channel.Atom", function(){
   describe("initialisation", function(){
 
     it("should accept a configuration object", function(){
-      var parser  = {};
-      var delay   = 2000;
+      var parser     = {};
+      var delay      = 2000;
+      var retryDelay = 4000;
 
-      var subject = new klass({'parser': parser, 'delay': delay});
+      var subject = new klass({'parser': parser, 'delay': delay, 'retryDelay': retryDelay});
       expect(subject.parser()).toEqual(parser);
       expect(subject.delay()).toEqual(delay);
+      expect(subject.retryDelay()).toEqual(retryDelay);
     });
 
   });

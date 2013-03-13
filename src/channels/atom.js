@@ -21,7 +21,7 @@ if (!com.jivatechnology.Badger.Channel) { com.jivatechnology.Badger.Channel = {}
 
       var poll = function(node){
         var success = function(body){
-          if(isPending(node)){
+          if(isPending(node)||isRetrying(node)){
             addSubscription(node);
             that.onSubscribeSuccess.handle(node);
           }
@@ -32,9 +32,18 @@ if (!com.jivatechnology.Badger.Channel) { com.jivatechnology.Badger.Channel = {}
           polls[node] = setTimeout(function(){ poll(node); }, that.delay());
         };
 
-        var failure = function(){
-          removeSubscription(node);
-          that.onSubscribeFailure.handle(node);
+        var failure = function(s){
+          var previouslyRetrying = isRetrying(node);
+          if(s.readyState === 0){
+            // Server unavailable, network?
+            addRetryingSubscription(node);
+            polls[node] = setTimeout(function(){ poll(node); }, that.retryDelay());
+          } else {
+            removeSubscription(node);
+          }
+          if(!previouslyRetrying){
+            that.onSubscribeFailure.handle(node);
+          }
         };
 
         var url = that.urlFor(node);
@@ -103,12 +112,20 @@ if (!com.jivatechnology.Badger.Channel) { com.jivatechnology.Badger.Channel = {}
         return subscriptions[node] == "pending";
       };
 
+      var isRetrying = function(node){
+        return subscriptions[node] == "retrying";
+      };
+
       var isSubscribed = function(node){
         return subscriptions.hasOwnProperty(node);
       };
 
       var addPendingSubscription = function(node){
         subscriptions[node] = "pending";
+      };
+
+      var addRetryingSubscription = function(node){
+        subscriptions[node] = "retrying";
       };
 
       var addSubscription = function(node){
@@ -124,8 +141,9 @@ if (!com.jivatechnology.Badger.Channel) { com.jivatechnology.Badger.Channel = {}
 
       this.name = 'Atom';
 
-      this.parser = function(){ return options.parser; };
-      this.delay  = function(){ return options.delay || 3000; };
+      this.parser     = function(){ return options.parser; };
+      this.delay      = function(){ return options.delay      || 3000; };
+      this.retryDelay = function(){ return options.retryDelay || 10000; };
 
       this.urlFor = function(node){ return node; };
 
