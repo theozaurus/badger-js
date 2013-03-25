@@ -19,7 +19,7 @@ if (!com.jivatechnology.Badger.Utils) { com.jivatechnology.Badger.Utils = {}; }
     },
     XMLContentsToString: function(xmlData){
       try {
-        var s = xmlData.hasOwnProperty('textContent') ? xmlData.textContent : xmlData.innerText;
+        var s = xmlData.textContent || xmlData.innerText || xmlData.nodeValue || '';
         return s;
       } catch (e) {
         return false;
