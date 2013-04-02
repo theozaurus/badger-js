@@ -63,6 +63,10 @@ if (!com.jivatechnology.Badger.Channel) { com.jivatechnology.Badger.Channel = {}
         return ["subscribed"].indexOf(subscriptions[name]) >= 0;
       };
 
+      var isPending = function(name){
+        return ["pending"].indexOf(subscriptions[name]) >= 0;
+      };
+
       var isRecognised = function(name){
         return subscriptions.hasOwnProperty(name);
       };
@@ -186,7 +190,7 @@ if (!com.jivatechnology.Badger.Channel) { com.jivatechnology.Badger.Channel = {}
           var uri = toXmppUri(service,node);
           var name = uriToName(uri);
           // check we are interested in said node
-          if(isSubscribed(name)){
+          if(isSubscribed(name)||isPending(name)){
             logger('debug','Got message for subscription "'+name+'"');
             // pick out updated items
             $items.find("> item").each(function(i,item){

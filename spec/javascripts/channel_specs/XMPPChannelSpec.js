@@ -70,7 +70,7 @@ describe("Badger.Channel.XMPP", function(){
       it("should trigger onFailure callbacks for 'pending' subscriptions", function(){
         var failed = false;
 
-        xmpp.sendIQ = function(s,success,failure){},
+        xmpp.sendIQ = function(s,success,failure){};
 
         subject.subscribe("node1");
         subject.onSubscribeFailure.add(function(n){ failed = n;});
@@ -244,6 +244,32 @@ describe("Badger.Channel.XMPP", function(){
         expect(sent_id).toEqual('1');
         expect(sent_verb).toEqual('update');
         expect(sent_body).toEqual('<ITEM XMLNS="HTTP://JABBER.ORG/PROTOCOL/PUBSUB#EVENT" ID="1"><PAYLOAD>FOO</PAYLOAD></ITEM>');
+      });
+
+      it("should trigger onMessage callback when node is in pending state", function(){
+        subject.subscribe("ignore me"); // sets up connection
+
+        xmpp.sendIQ = function(s,success,failure){};
+
+        // Setup pending subscription
+        subject.subscribe("a node");
+
+        var called = false;
+        subject.onMessage.add(function(node,id,verb,m){ called = true; });
+
+        // Pass stuff to channel
+        var stanza = " \
+          <message from='pubsub.test.host' to='francisco@denmark.lit' id='foo'> \
+            <event xmlns='http://jabber.org/protocol/pubsub#event'> \
+              <items node='a node'> \
+                <item id='1'><payload>foo</payload></item> \
+              </items> \
+            </event> \
+          </message>";
+
+        message_handler(XML.stringToXMLElement(stanza));
+
+        expect(called).toBeTruthy();
       });
 
       it("should trigger onMessage callback for remove an item", function(){
