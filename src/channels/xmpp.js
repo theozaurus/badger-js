@@ -105,7 +105,6 @@ if (!com.jivatechnology.Badger.Channel) { com.jivatechnology.Badger.Channel = {}
       };
 
       var subscriptionSubscribe = function(name){
-        if(that.subscriptions().length === 0){ addMessageHandler(); }
         subscriptions[name] = "subscribed";
         subscriptionUris[that.xmppUri(name)] = name;
       };
@@ -124,6 +123,8 @@ if (!com.jivatechnology.Badger.Channel) { com.jivatechnology.Badger.Channel = {}
       //// Handling subscription state changes
 
       var subscribe = function(name){
+        addMessageHandler();
+
         var stanza  = subscribe_stanza(name);
 
         var success = function(){ onSubscribeSuccess(name); };
@@ -323,6 +324,8 @@ if (!com.jivatechnology.Badger.Channel) { com.jivatechnology.Badger.Channel = {}
       //// Adds handler for incoming messages
       var stropheMessageHandler;
       var addMessageHandler = function(){
+        if(stropheMessageHandler){ return; }
+
         handler      = onMessage;
         ns           = null;
         element_name = "message";

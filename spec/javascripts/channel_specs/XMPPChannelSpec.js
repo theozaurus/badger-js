@@ -157,6 +157,7 @@ describe("Badger.Channel.XMPP", function(){
             from:    from,
             options: options
           };
+          return 'id';
         };
 
         subject.subscribe("a node");
